@@ -6,6 +6,8 @@
 #include <opencv2/imgproc/imgproc.hpp> 
 using namespace cv;
 
+#define THRESHOLD = 127.0;
+
 int main() {
     cv::Mat frame;
 
@@ -20,20 +22,28 @@ int main() {
         capture >> frame;
         cv::Mat bw = cv::Mat(frame.size(), CV_8UC1);
         cv::Mat run_ave = frame.clone();
+        cv::Mat blur_frame = frame.clone();
         cv::Mat weightedFrame = cv::Mat(frame.size(), CV_32FC3);
+        cv::Mat dif = frame.clone();
+        cv::Mat thresh = cv::Mat(frame.size(), CV_8UC1);
 
-        cv::cvtColor(frame, bw, CV_BGR2GRAY);
-        cv::Canny(bw, bw, 80, 100);
+        //        cv::cvtColor(frame, bw, CV_BGR2GRAY);
+        //        cv::Canny(bw, bw, 80, 100);
 
         /*per helpful hints*/
 
-        cv::accumulateWeighted(frame, weightedFrame, 0.32);
+        cv::GaussianBlur(frame, blur_frame, Size(21, 21), 0, 0);
+        cv::accumulateWeighted(blur_frame, weightedFrame, 0.32);
         cv::convertScaleAbs(weightedFrame, run_ave, 1.0, 0.0);
-        //        cv::GaussianBlur(weightedFrame, weightedFrame, Size(31, 31), 0, 0);
+
+        cv::absdiff(run_ave, blur_frame, dif);
+        cv::cvtColor(dif, bw, CV_BGR2GRAY);
+//        cv::threshold(bw, thresh, THRESHOLD, 255.0, 0);
+        cv::threshold(bw, thresh, 25.0, 255.0, 0);
 
         cv::imshow("OpenCV", frame);
         cv::imshow("GrayScale", bw);
-        cv::imshow("New Image", run_ave);
+        cv::imshow("New Image", thresh);
 
         c = cv::waitKey(10);
         if (c == 27)
