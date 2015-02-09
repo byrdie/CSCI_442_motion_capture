@@ -1,4 +1,3 @@
-//#include <stdafx.h>
 
 #include "main.h"
 
@@ -26,17 +25,21 @@ int main() {
 
         /*per helpful hints*/
 
+        /*blur frame and take average*/
         cv::GaussianBlur(frame, blur_frame, Size(21, 21), 0, 0);
         cv::accumulateWeighted(blur_frame, weightedFrame, 0.30);
         cv::convertScaleAbs(weightedFrame, run_ave, 1.0, 0.0);
 
+        /*take difference between average and original*/
         cv::absdiff(run_ave, blur_frame, dif);
         cv::cvtColor(dif, bw, CV_BGR2GRAY);
+        
+        /*blur and threshold twice*/
         cv::GaussianBlur(bw, bw, Size(21, 21), 0, 0);
         cv::threshold(bw, thresh, 8.0, 255.0, 0);
         cv::GaussianBlur(thresh, thresh, Size(21, 21), 0, 0);
         cv::threshold(thresh, thresh, 8.0, 255.0, 0);
-        
+
         storage = thresh.clone();
 
         cv::Mat contour = cv::Mat::zeros(frame.size(), CV_8UC3);
@@ -57,12 +60,13 @@ int main() {
             }
         }
 
-//        int npts[vect_contours.size()];
-//        cv::Mat poly = cv::Mat::zeros(frame.size(), CV_8UC3);
-//        Point ** points = double_vector_to_double_array(vect_contours);
-//        fillPoly(poly, points, npts, vect_contours.size(), color, 8, 0);
+        //        int npts[vect_contours.size()];
+        //        cv::Mat poly = cv::Mat::zeros(frame.size(), CV_8UC3);
+        //        Point ** points = double_vector_to_double_array(vect_contours);
+        //        fillPoly(poly, points, npts, vect_contours.size(), color, 8, 0);
 
         cv::imshow("OpenCV", frame);
+        cv::imshow("OpenCV2", dif);
         cv::imshow("GrayScale", thresh);
         cv::imshow("New Image", contour);
 
@@ -127,17 +131,17 @@ Point findLowerLeftCorner(vector<Point> ctr) {
 }
 
 Point** double_vector_to_double_array(vector<vector<Point> > vtr) {
-    
-    Point ** points = (Point**) malloc(vtr.size() * sizeof(Point*));
-    
+
+    Point ** points = (Point**) malloc(vtr.size() * sizeof (Point*));
+
     for (unsigned int i = 0; i < vtr.size(); i++) {
-        
+
         vector<Point> next_vtr = vtr.at(i);
-        points[i] = (Point *) malloc(next_vtr.size() * sizeof(Point));
+        points[i] = (Point *) malloc(next_vtr.size() * sizeof (Point));
         for (unsigned int j = 0; j < next_vtr.size(); j++) {
             points[i][j] = next_vtr.at(j);
         }
     }
-    
+
     return points;
 }
